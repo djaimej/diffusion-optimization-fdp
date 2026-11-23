@@ -1,0 +1,118 @@
+<main class="container-fluid py-3">
+  <header class="d-flex flex-wrap align-items-center gap-3 mb-3">
+    <div class="me-auto">
+      <h1 class="h4 mb-0">Optimización de difusión</h1>
+      <div class="small text-body-secondary">
+        FUENTE → DIFUSORES → PASIVOS · {{ store.diffuserCount() }}/{{ MAX_DIFFUSERS }} difusores ·
+        {{ store.passiveCount() }}/{{ MAX_PASSIVES }} pasivos · {{ store.edgeCount() }} aristas
+      </div>
+    </div>
+
+    <div class="btn-group" role="group" aria-label="Modo de propagación">
+      <input type="radio" class="btn-check" name="mode" id="mode-broadcast" [checked]="store.mode() === 'broadcast'"
+        (change)="setMode('broadcast')" />
+      <label class="btn btn-outline-primary" for="mode-broadcast"
+        ngbTooltip="Cada difusor activado envía a TODOS sus pasivos y se pagan todas sus aristas (Set Cover ponderado).">
+        Broadcast
+      </label>
+      <input type="radio" class="btn-check" name="mode" id="mode-select" [checked]="store.mode() === 'select'"
+        (change)="setMode('select')" />
+      <label class="btn btn-outline-primary" for="mode-select"
+        ngbTooltip="Cada pasivo recibe de UN solo difusor activado; sólo se pagan esas aristas (Facility Location).">
+        Selectivo
+      </label>
+    </div>
+
+    <div ngbDropdown class="d-inline-block">
+      <button type="button" class="btn btn-outline-secondary" ngbDropdownToggle>Topología</button>
+      <div ngbDropdownMenu>
+        <button type="button" ngbDropdownItem (click)="store.loadExample()">
+          Ejemplo del diagrama
+        </button>
+        <h6 class="dropdown-header">Aleatoria</h6>
+        @for (r of randomPresets; track $index) {
+        <button type="button" ngbDropdownItem (click)="store.loadRandom(r.D, r.P)">
+          {{ r.D }} difusores × {{ r.P }} pasivos
+          @if (r.D > EXACT_LIMIT) {
+          <span class="badge text-bg-warning ms-1">heurística</span>
+          }
+        </button>
+        }
+        <div class="dropdown-divider"></div>
+        <button type="button" ngbDropdownItem (click)="exportJson()">Exportar JSON</button>
+        <label ngbDropdownItem class="mb-0" for="import-file" role="button">Importar JSON…</label>
+        <div class="dropdown-divider"></div>
+        <button type="button" ngbDropdownItem class="text-danger" (click)="store.clear()">
+          Vaciar
+        </button>
+      </div>
+    </div>
+    <input id="import-file" type="file" accept="application/json,.json" class="d-none" (change)="importJson($event)" />
+
+    @if (store.run().status === 'running') {
+    <button type="button" class="btn btn-outline-danger" (click)="store.cancel()">
+      Cancelar
+    </button>
+    } @else {
+    <button type="button" class="btn btn-warning fw-semibold px-4" [disabled]="store.errors().length > 0"
+      (click)="store.calculate()">
+      Calcular
+    </button>
+    }
+  </header>
+
+  @if (importError(); as err) {
+  <div class="alert alert-danger alert-dismissible py-2">
+    {{ err }}
+    <button type="button" class="btn-close" aria-label="Cerrar" (click)="importError.set(null)"></button>
+  </div>
+  }
+
+  <div class="row g-3">
+    <section class="col-xl-6">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span>Topología y costos</span>
+          <span class="small text-body-secondary">
+            @if (store.willBeExact()) {
+            Exacto (≤ {{ EXACT_LIMIT }} difusores)
+            } @else {
+            Heurística (> {{ EXACT_LIMIT }} difusores)
+            }
+          </span>
+        </div>
+        <div class="card-body p-2">
+          <app-cost-matrix />
+        </div>
+        @if (store.errors().length) {
+        <div class="card-footer">
+          <div class="small fw-semibold text-danger mb-1">
+            Corrige {{ store.errors().length }}
+            {{ store.errors().length === 1 ? 'problema' : 'problemas' }} para poder calcular:
+          </div>
+          <ul class="small mb-0 errors">
+            @for (e of store.errors(); track $index) {
+            <li>{{ e }}</li>
+            }
+          </ul>
+        </div>
+        }
+      </div>
+    </section>
+
+    <section class="col-xl-6 d-flex flex-column gap-3">
+      <div class="card">
+        <div class="card-header">Grafo</div>
+        <div class="card-body p-2">
+          <app-graph-view />
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">Resultado</div>
+        <div class="card-body">
+          <app-result-panel />
+        </div>
+      </div>
+    </section>
+  </div>
+</main>

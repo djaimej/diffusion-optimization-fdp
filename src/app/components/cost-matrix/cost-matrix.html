@@ -1,0 +1,74 @@
+<div class="matrix-scroll">
+  <table class="table table-sm table-bordered align-middle mb-0 matrix">
+    <thead>
+      <tr>
+        <th class="sticky-col corner" scope="col">
+          <span class="text-body-secondary small">Difusor</span>
+        </th>
+        <th class="src-col text-center" scope="col">
+          <span class="small" ngbTooltip="Costo FUENTE → DIFUSOR (obligatorio, ≥ 1)">F→D</span>
+        </th>
+        @for (p of t().passives; track $index; let j = $index) {
+        <th class="cell-col" scope="col" [class.text-danger]="orphanPassives().has(j)">
+          <div class="d-flex align-items-center gap-1">
+            <input class="form-control form-control-sm name-input text-center" [value]="p"
+              [attr.aria-label]="'Nombre del pasivo ' + (j + 1)" (change)="store.renamePassive(j, value($event))" />
+            <button type="button" class="btn btn-link btn-sm p-0 text-body-secondary text-decoration-none"
+              [attr.aria-label]="'Eliminar pasivo ' + p" [disabled]="t().passives.length === 1"
+              (click)="store.removePassive(j)">
+              ×
+            </button>
+          </div>
+        </th>
+        }
+        <th class="add-col" scope="col">
+          <button type="button" class="btn btn-outline-secondary btn-sm" ngbTooltip="Agregar pasivo"
+            [disabled]="!store.canAddPassive()" (click)="store.addPassive()">
+            + P
+          </button>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (d of t().diffusers; track $index; let i = $index) {
+      <tr [class.row-used]="used().diffusers.has(i)">
+        <th class="sticky-col" scope="row" [class.text-danger]="!rowHasEdges(i)">
+          <div class="d-flex align-items-center gap-1">
+            <button type="button" class="btn btn-link btn-sm p-0 text-body-secondary text-decoration-none"
+              [attr.aria-label]="'Eliminar difusor ' + d" [disabled]="t().diffusers.length === 1"
+              (click)="store.removeDiffuser(i)">
+              ×
+            </button>
+            <input class="form-control form-control-sm name-input" [value]="d"
+              [attr.aria-label]="'Nombre del difusor ' + (i + 1)" (change)="store.renameDiffuser(i, value($event))" />
+          </div>
+        </th>
+        <td class="src-col">
+          <input type="number" min="1" class="form-control form-control-sm cost-input src-input"
+            [class.is-invalid]="invalidWeight(t().sourceCost[i])" [value]="fmt(t().sourceCost[i])"
+            [attr.aria-label]="'Costo F → ' + d" (change)="store.setSourceCost(i, value($event))" />
+        </td>
+        @for (w of t().cost[i]; track $index; let j = $index) {
+        <td class="cell-col" [class.edge-used]="used().edges.has(i + ':' + j)">
+          <input type="number" min="1" class="form-control form-control-sm cost-input" [class.empty]="w === null"
+            [class.is-invalid]="invalidWeight(w)" [value]="fmt(w)" placeholder="—"
+            [attr.aria-label]="'Costo ' + d + ' → ' + t().passives[j]" (change)="store.setCost(i, j, value($event))" />
+        </td>
+        }
+        <td class="add-col"></td>
+      </tr>
+      }
+      <tr>
+        <th class="sticky-col" scope="row">
+          <button type="button" class="btn btn-outline-secondary btn-sm" [disabled]="!store.canAddDiffuser()"
+            (click)="store.addDiffuser()">
+            + Difusor
+          </button>
+        </th>
+        <td [attr.colspan]="t().passives.length + 2" class="text-body-secondary small">
+          Celda vacía = sin arista. Todos los costos deben ser ≥ 1.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

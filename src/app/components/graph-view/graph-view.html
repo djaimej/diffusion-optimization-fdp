@@ -1,0 +1,41 @@
+@let v = view();
+<div class="graph-scroll">
+  <svg [attr.viewBox]="'0 0 ' + v.width + ' ' + v.height" [style.max-width.px]="v.width" role="img"
+    aria-label="Grafo de difusión: fuente, difusores y pasivos">
+    <g class="edges">
+      @for (e of v.edges; track e.id) {
+      <line [attr.x1]="e.x1" [attr.y1]="e.y1" [attr.x2]="e.x2" [attr.y2]="e.y2" [class]="'edge ' + e.state"
+        [class.hot]="isHot(e)" />
+      }
+    </g>
+    <g class="labels">
+      @for (e of v.edges; track e.id) {
+      @if (showLabel(e)) {
+      @let pos = labelPos(e);
+      <text [attr.x]="pos.x" [attr.y]="pos.y" [class]="'edge-label ' + e.state" [class.hot]="isHot(e)">
+        {{ e.w }}
+      </text>
+      }
+      }
+    </g>
+    <g class="nodes">
+      @for (n of v.nodes; track n.id) {
+      <g [class]="'node ' + n.kind" [class.used]="n.used" [attr.transform]="'translate(' + n.x + ',' + n.y + ')'"
+        (mouseenter)="hovered.set(n.id)" (mouseleave)="hovered.set(null)">
+        <title>{{ n.label }}</title>
+        <circle [attr.r]="n.kind === 'source' ? 20 : 16" />
+        <text>{{ short(n.label) }}</text>
+      </g>
+      }
+    </g>
+  </svg>
+</div>
+<div class="legend small text-body-secondary d-flex flex-wrap gap-3 mt-1">
+  <span><i class="dot source"></i> Fuente</span>
+  <span><i class="dot diffuser"></i> Difusor</span>
+  <span><i class="dot passive"></i> Pasivo</span>
+  <span><i class="bar used"></i> En la solución</span>
+  @if (!v.showAllLabels) {
+  <span>Pasa el cursor por un nodo para ver sus costos</span>
+  }
+</div>

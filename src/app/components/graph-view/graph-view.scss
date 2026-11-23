@@ -1,0 +1,123 @@
+.graph-scroll {
+  overflow: auto;
+  max-height: 60vh;
+}
+
+svg {
+  width: 100%;
+  display: block;
+  margin: 0 auto;
+}
+
+.edge {
+  stroke: var(--bs-secondary-color);
+  stroke-width: 1.2;
+  opacity: 0.55;
+
+  &.used {
+    stroke: var(--bs-warning);
+    stroke-width: 2.5;
+    opacity: 1;
+  }
+
+  &.unused {
+    opacity: 0.12;
+  }
+
+  &.hot {
+    stroke: var(--bs-info-text-emphasis);
+    opacity: 1;
+  }
+}
+
+.edge-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-anchor: middle;
+  dominant-baseline: central;
+  fill: var(--bs-body-color);
+  paint-order: stroke;
+  stroke: var(--bs-body-bg);
+  stroke-width: 4px;
+  pointer-events: none;
+
+  &.used {
+    fill: var(--bs-warning);
+  }
+
+  &.unused {
+    opacity: 0.35;
+  }
+
+  &.hot {
+    opacity: 1;
+  }
+}
+
+.node {
+  cursor: default;
+
+  circle {
+    stroke: var(--bs-body-bg);
+    stroke-width: 2;
+  }
+
+  text {
+    font-size: 11px;
+    font-weight: 600;
+    fill: #fff;
+    text-anchor: middle;
+    dominant-baseline: central;
+    pointer-events: none;
+  }
+
+  &.source circle {
+    fill: var(--bs-primary);
+  }
+
+  &.diffuser circle {
+    fill: var(--bs-info);
+  }
+
+  &.passive circle {
+    fill: var(--bs-gray-700);
+  }
+
+  &.diffuser.used circle {
+    stroke: var(--bs-warning);
+    stroke-width: 3;
+  }
+}
+
+.legend {
+
+  .dot,
+  .bar {
+    display: inline-block;
+    vertical-align: middle;
+  }
+
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+
+    &.source {
+      background: var(--bs-primary);
+    }
+
+    &.diffuser {
+      background: var(--bs-info);
+    }
+
+    &.passive {
+      background: var(--bs-gray-700);
+    }
+  }
+
+  .bar {
+    width: 16px;
+    height: 3px;
+    background: var(--bs-warning);
+  }
+}

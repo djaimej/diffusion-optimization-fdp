@@ -1,0 +1,62 @@
+.matrix-scroll {
+  overflow: auto;
+  max-height: 60vh;
+}
+
+.matrix {
+  width: max-content;
+
+  th,
+  td {
+    padding: 0.2rem;
+    white-space: nowrap;
+  }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--bs-tertiary-bg);
+  }
+}
+
+.sticky-col {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--bs-tertiary-bg);
+}
+
+thead .corner {
+  z-index: 3;
+}
+
+.name-input {
+  width: 4.5rem;
+}
+
+.cost-input {
+  width: 3.5rem;
+  text-align: center;
+
+  &.empty {
+    background: transparent;
+    border-style: dashed;
+  }
+}
+
+.src-col {
+  background: rgba(var(--bs-primary-rgb), 0.15);
+}
+
+.row-used>.sticky-col,
+.row-used>.src-col {
+  box-shadow: inset 3px 0 0 var(--bs-warning);
+}
+
+.row-used .src-input,
+.edge-used .cost-input {
+  border-color: var(--bs-warning);
+  color: var(--bs-warning);
+  font-weight: 600;
+}

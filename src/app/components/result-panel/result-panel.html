@@ -1,0 +1,132 @@
+@switch (store.run().status) {
+@case ('idle') {
+<p class="text-body-secondary mb-0">
+  Diseña la topología y presiona <strong>Calcular</strong> para obtener los difusores mínimos.
+</p>
+}
+@case ('running') {
+<div class="d-flex align-items-center gap-2">
+  <div class="spinner-border spinner-border-sm" role="status"></div>
+  <span>Calculando…</span>
+</div>
+}
+@case ('cancelled') {
+<p class="text-body-secondary mb-0">Cálculo cancelado.</p>
+}
+@case ('error') {
+@let r = store.run();
+@if (r.status === 'error') {
+<div class="alert alert-danger mb-0" style="white-space: pre-line">{{ r.message }}</div>
+}
+}
+}
+
+@if (result(); as r) {
+@if (store.isStale()) {
+<div class="alert alert-warning py-2 small">
+  La topología o el modo cambiaron desde este cálculo; el resultado mostrado ya no corresponde.
+  Vuelve a calcular.
+</div>
+}
+
+<div class="row g-2 mb-3 text-center">
+  <div class="col-4">
+    <div class="border p-2">
+      <div class="small text-body-secondary">Costo total</div>
+      <div class="fs-3 fw-bold text-warning">{{ r.solution.total }}</div>
+    </div>
+  </div>
+  <div class="col-4">
+    <div class="border p-2">
+      <div class="small text-body-secondary">F → D</div>
+      <div class="fs-4">{{ r.solution.sourceCost }}</div>
+    </div>
+  </div>
+  <div class="col-4">
+    <div class="border p-2">
+      <div class="small text-body-secondary">D → P</div>
+      <div class="fs-4">{{ r.solution.deliveryCost }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="d-flex flex-wrap gap-2 mb-3 small">
+  <span class="badge text-bg-secondary">
+    Modo: {{ r.mode === 'broadcast' ? 'Broadcast' : 'Selectivo' }}
+  </span>
+  @if (r.solution.exact) {
+  <span class="badge text-bg-success">Óptimo garantizado (exacto)</span>
+  } @else {
+  <span class="badge text-bg-warning">Heurística (sin garantía de óptimo)</span>
+  }
+  @if (r.solution.exact) {
+  <span class="badge text-bg-dark border">{{ r.solution.explored | number }} nodos explorados</span>
+  }
+  <span class="badge text-bg-dark border">{{ r.ms | number: '1.0-1' }} ms</span>
+</div>
+
+<p class="mb-2">
+  Enviar a <strong>{{ r.solution.diffusers.length }}</strong> de
+  {{ r.topology.diffusers.length }} difusores:
+  @for (d of breakdown()!.diffusers; track d.name; let last = $last) {
+  <strong class="text-warning">{{ d.name }}</strong>{{ last ? '' : ', ' }}
+  }
+</p>
+
+<ul ngbNav #nav="ngbNav" class="nav-tabs">
+  <li ngbNavItem>
+    <button ngbNavLink>Por difusor</button>
+    <ng-template ngbNavContent>
+      <table class="table table-sm mb-0">
+        <thead>
+          <tr>
+            <th>Difusor</th>
+            <th class="text-end">F→D</th>
+            <th class="text-end">Σ D→P</th>
+            <th>Entrega a</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (d of breakdown()!.diffusers; track d.name) {
+          <tr>
+            <td>{{ d.name }}</td>
+            <td class="text-end">{{ d.source }}</td>
+            <td class="text-end">{{ d.delivery }}</td>
+            <td class="small">{{ d.passives.join(', ') }}</td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </ng-template>
+  </li>
+  <li ngbNavItem>
+    <button ngbNavLink>Por pasivo</button>
+    <ng-template ngbNavContent>
+      <table class="table table-sm mb-0">
+        <thead>
+          <tr>
+            <th>Pasivo</th>
+            <th>Recibe de (costo)</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of breakdown()!.passives; track p.name) {
+          <tr>
+            <td>{{ p.name }}</td>
+            <td>
+              @for (f of p.from; track f.name; let last = $last) {
+              {{ f.name }} ({{ f.w }}){{ last ? '' : ', ' }}
+              }
+              @if (p.from.length > 1) {
+              <span class="badge text-bg-secondary ms-1">redundante</span>
+              }
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </ng-template>
+  </li>
+</ul>
+<div [ngbNavOutlet]="nav" class="mt-2"></div>
+}
